@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <math.h>
-#include <stdbool.h>
 #include <stdlib.h>
-#include <set>
 
 // g++ -Wall -fPIC -O2 -c isin.cpp && g++ -shared -o isin.so isin.o
 
@@ -10,32 +6,45 @@
 extern "C" {
 #endif
 
-bool* isin(int where[], int where_size, int what[], int what_size) {
+bool* isin(int64_t where[], int64_t where_size, int64_t what[], int64_t what_size) {
     bool* result = (bool*)malloc(sizeof(bool) * where_size);
-    std::set<int> s;
-    for (int i = 0; i < what_size; i++) {
-        s.insert(what[i]);
+    for (int64_t i = 0; i < where_size; i++) {
+        result[i] = false;
     }
-    for (int i = 0; i < where_size; i++) {
-        result[i] = s.count(where[i]) > 0;
+
+    if (what_size == 0) return result;
+
+    int64_t what_min = what[0], what_max = what[0];
+    for (int64_t i = 1; i < what_size; i++) {
+        if (what[i] > what_max) what_max = what[i];
+        else if (what[i] < what_min) what_min = what[i];
     }
+    int64_t what_range = what_max - what_min;
+
+    int64_t* what_normalized = (int64_t*)malloc(sizeof(int64_t) * what_size + 1);
+    for (int64_t i = 0; i < what_size; i++) {
+        what_normalized[i] = what[i] - what_min;
+    }
+
+    bool* isin_helper_ar = (bool*)malloc(sizeof(bool) * what_range + 1);
+    for (int64_t i = 0; i <= what_range; i++) {
+        isin_helper_ar[i] = false;
+    }
+    for (int64_t i = 0; i < what_size; i++) {
+        isin_helper_ar[what_normalized[i]] = true;
+    }
+
+    for (int64_t i = 0; i < where_size; i++) {
+        if (where[i] > what_max || where[i] < what_min) continue;
+        result[i] = isin_helper_ar[where[i] - what_min];
+    }
+
+    free(what_normalized);
+    free(isin_helper_ar);
+
     return result;
 }
 
 #ifdef __cplusplus
 }
 #endif
-
-//int main() {
-//    int where[] = {1, 2, 3, 4, 5};
-//    int where_size = 5;
-//    int what[] = {1, 3, 5};
-//    int what_size = 3;
-//    bool* in = isin(where, where_size, what, what_size);
-//
-//    for (int i = 0; i < where_size; i++) {
-//        printf("%d: %d\n", i, in[i]);
-//    }
-//
-//    return 0;
-//}
