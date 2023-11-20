@@ -8,7 +8,7 @@ double l2norm(double x, double y) {
 }
 
 double l2distance(double x1, double y1, double x2, double y2) {
-    return l2norm(x1-x2, y1-y2);
+    return l2norm(x2-x1, y2-y1);
 }
 
 //int main() {
