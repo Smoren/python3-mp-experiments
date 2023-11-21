@@ -7,7 +7,7 @@ extern "C" {
 #endif
 
 double fpadd(double a, double b) {
-    return a + b;
+    return a + b + 100;
 }
 
 #ifdef __cplusplus

@@ -14,13 +14,15 @@ double = ir.DoubleType()
 fnty = ir.FunctionType(double, (double, double))
 
 module = ir.Module("fdadd")
-func = ir.Function(module, fnty, name="fpadd")
 
-block = func.append_basic_block(name="entry")
-builder = ir.IRBuilder(block)
-a, b = func.args
-result = builder.fadd(a, b, name="res")
-builder.ret(result)
+# llvm IR call external C++ function
+outfunc = ir.Function(module, fnty, name="fpadd")
+# just declare shared library function in module
+outaddfunc = ir.Function(module, fnty, name="outadd")
+builder = ir.IRBuilder(outaddfunc.append_basic_block(name="entry"))
+a, b = outaddfunc.args
+outresult = builder.call(outfunc, (a, b))
+builder.ret(outresult)
 
 strmod = str(module)
 assmod = llvm.parse_assembly(strmod)
@@ -31,7 +33,7 @@ target_machine = target.create_target_machine()
 engine = llvm.create_mcjit_compiler(assmod, target_machine)
 engine.finalize_object()
 
-func_ptr = engine.get_function_address("fpadd")
+func_ptr = engine.get_function_address("outadd")
 
 myadd = CFUNCTYPE(c_double, c_double, c_double)(func_ptr)
 
