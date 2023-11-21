@@ -79,6 +79,14 @@ def isin_py(where: np.ndarray, what: np.ndarray) -> np.ndarray:
     return result
 
 
+def isin_set(a, b):
+    out = np.empty(a.shape[0], dtype=np.bool_)
+    b = set(b)
+    for i in nb.prange(a.shape[0]):
+        out[i] = a[i] in b
+    return out
+
+
 a = np.array(np.arange(10, 100000000, 2), dtype=np.int64)
 b = np.array(np.arange(10, 100000000, 3), dtype=np.int64)
 
@@ -109,39 +117,49 @@ b = np.array(np.random.randint(-1000, 1000, 100000), dtype=np.int64)
 r1 = np.isin(a, b)
 r2 = isin_c(a, b)
 r3 = isin_py(a, b)
+r4 = isin_set(a, b)
 assert np.unique(r1 == r2) == np.array([True])
 assert np.unique(r1 == r3) == np.array([True])
+assert np.unique(r1 == r4) == np.array([True])
 
 a = np.array(np.random.randint(-2000, 2000, 100000), dtype=np.int64)
 b = np.array(np.random.randint(-1000, 1000, 100000), dtype=np.int64)
 r1 = np.isin(a, b)
 r2 = isin_c(a, b)
 r3 = isin_py(a, b)
+r4 = isin_set(a, b)
 assert np.unique(r1 == r2) == np.array([True])
 assert np.unique(r1 == r3) == np.array([True])
+assert np.unique(r1 == r4) == np.array([True])
 
 a = np.array(np.random.randint(-1000, 1000, 100000), dtype=np.int64)
 b = np.array(np.random.randint(-2000, 2000, 100000), dtype=np.int64)
 r1 = np.isin(a, b)
 r2 = isin_c(a, b)
 r3 = isin_py(a, b)
+r4 = isin_set(a, b)
 assert np.unique(r1 == r2) == np.array([True])
 assert np.unique(r1 == r3) == np.array([True])
+assert np.unique(r1 == r4) == np.array([True])
 
 a = np.array(np.random.randint(-1000, -100, 100000), dtype=np.int64)
 b = np.array(np.random.randint(100, 2000, 100000), dtype=np.int64)
 r1 = np.isin(a, b)
 r2 = isin_c(a, b)
 r3 = isin_py(a, b)
+r4 = isin_set(a, b)
 assert np.unique(r1 == r2) == np.array([True])
 assert np.unique(r1 == r3) == np.array([True])
+assert np.unique(r1 == r4) == np.array([True])
 
 a = np.array(np.arange(0, 100), dtype=np.int64)
 b = np.array(np.arange(99, 200), dtype=np.int64)
 r1 = np.isin(a, b)
 r2 = isin_c(a, b)
 r3 = isin_py(a, b)
+r4 = isin_set(a, b)
 assert np.unique(r1 == r2) == np.array([True])
 assert np.unique(r1 == r3) == np.array([True])
+assert np.unique(r1 == r4) == np.array([True])
 
 print('OK')
