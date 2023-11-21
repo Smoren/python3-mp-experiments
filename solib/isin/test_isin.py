@@ -162,4 +162,18 @@ assert np.unique(r1 == r2) == np.array([True])
 assert np.unique(r1 == r3) == np.array([True])
 assert np.unique(r1 == r4) == np.array([True])
 
+a = np.array([
+    1, 7, 20, 25, 29, 32, 33, 46, 52, 53, 84, 103, 105, 107, 111, 112, 115, 122,
+    123, 131, 133, 150, 153, 156, 159, 162, 163, 184, 190, 194, 202, 205, 209, 210,
+    219, 222, 223, 228, 235, 249, 250, 257, 260, 275, 280,
+])
+b = np.array([85])
+r1 = np.isin(a, b)
+r2 = isin_c(a, b)
+r3 = isin_py(a, b)
+r4 = isin_set(a, b)
+assert np.unique(r1 == r2) == np.array([True])
+assert np.unique(r1 == r3) == np.array([True])  # FAIL!
+assert np.unique(r1 == r4) == np.array([True])
+
 print('OK')
