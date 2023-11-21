@@ -79,6 +79,7 @@ def isin_py(where: np.ndarray, what: np.ndarray) -> np.ndarray:
     return result
 
 
+@nb.njit(looplift=True, nogil=True)
 def isin_set(a, b):
     out = np.empty(a.shape[0], dtype=np.bool_)
     b = set(b)
@@ -104,6 +105,12 @@ ts = time.time()
 r2 = isin_c(a, b)
 print(r2.shape, r2[:12])
 print(f'isin_lib.isin(): {time.time() - ts}')
+
+
+ts = time.time()
+r2 = isin_set(a, b)
+print(r2.shape, r2[:12])
+print(f'isin_set(): {time.time() - ts}')
 
 ts = time.time()
 r3 = in1d(a, b)
