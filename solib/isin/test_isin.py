@@ -46,14 +46,14 @@ def isin_py(where: np.ndarray, what: np.ndarray) -> np.ndarray:
     where_size = where.shape[0]
     what_size = what.shape[0]
     result = np.empty(shape=(where_size,), dtype=np.bool_)
-    for i in nb.prange(what_size):
+    for i in nb.prange(where_size):
         result[i] = False
 
     if what_size == 0:
         return result
 
     what_min, what_max = what[0], what[0]
-    for i in nb.prange(what_size):
+    for i in nb.prange(1, what_size):
         if what[i] > what_max:
             what_max = what[i]
         elif what[i] < what_min:
@@ -66,7 +66,7 @@ def isin_py(where: np.ndarray, what: np.ndarray) -> np.ndarray:
         what_normalized[i] = what[i] - what_min
 
     isin_helper_ar = np.empty(shape=(what_range+1,), dtype=np.int64)
-    for i in nb.prange(what_range):
+    for i in nb.prange(what_range+1):
         isin_helper_ar[i] = False
     for i in nb.prange(what_size):
         isin_helper_ar[what_normalized[i]] = True
@@ -173,7 +173,7 @@ r2 = isin_c(a, b)
 r3 = isin_py(a, b)
 r4 = isin_set(a, b)
 assert np.unique(r1 == r2) == np.array([True])
-assert np.unique(r1 == r3) == np.array([True])  # FAIL!
+assert np.unique(r1 == r3) == np.array([True])
 assert np.unique(r1 == r4) == np.array([True])
 
 print('OK')
