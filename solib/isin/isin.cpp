@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-bool* isin(int64_t* where, int64_t where_size, int64_t* what, int64_t what_size) {
+bool* isin(int64_t where[], int64_t where_size, int64_t what[], int64_t what_size) {
     bool* result = (bool*)malloc(sizeof(bool) * where_size);
     for (int64_t i = 0; i < where_size; i++) {
         result[i] = false;
