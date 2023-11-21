@@ -1,58 +1,63 @@
-from ctypes import CFUNCTYPE, c_int64, c_bool, POINTER
-
+import numba as nb
 import numpy as np
-from numpy.ctypeslib import ndpointer
+from cffi import FFI
+from numba.core import cgutils
+from numba.core.extending import intrinsic
 
-import llvmlite.binding as llvm
-import llvmlite.ir as ir
-import numba
+ffi = FFI()
+ffi.cdef('bool* isin(int64_t where[], int64_t where_size, int64_t what[], int64_t what_size);')
 
-llvm.initialize()
-llvm.initialize_native_target()
-llvm.initialize_native_asmprinter()
-
-llvm.load_library_permanently('./isin.so')
-
-int_type = ir.IntType(64)
-int_ptr_type = ir.PointerType(int_type)
-fnty = ir.FunctionType(int_ptr_type, (int_ptr_type, int_type, int_ptr_type, int_type))
-
-module = ir.Module("myisin")
-
-# llvm IR call external C++ function
-outfunc = ir.Function(module, fnty, name="isin")
-# just declare shared library function in module
-outaddfunc = ir.Function(module, fnty, name="export_isin")
-builder = ir.IRBuilder(outaddfunc.append_basic_block(name="entry"))
-outresult = builder.call(outfunc, outaddfunc.args)
-builder.ret(outresult)
-
-strmod = str(module)
-assmod = llvm.parse_assembly(strmod)
-assmod.verify()
-
-target = llvm.Target.from_default_triple()
-target_machine = target.create_target_machine()
-engine = llvm.create_mcjit_compiler(assmod, target_machine)
-engine.finalize_object()
-
-func_ptr = engine.get_function_address("export_isin")
-
-isin = CFUNCTYPE(
-    POINTER(c_bool),
-    POINTER(c_int64),
-    c_int64,
-    POINTER(c_int64),
-    c_int64,
-)(func_ptr)
+# loads the entire C namespace
+C = ffi.dlopen('./isin.so')
+c_isin = C.isin
 
 
-@numba.njit(fastmath=True, parallel=True)
-def test_myadd():
-    for _ in numba.prange(10):
-        a, b = 2, 4
-        res = isin([0], 1, [1], 1)
-        print(res)
+@intrinsic
+def val_to_ptr(typingctx, data):
+    def impl(context, builder, signature, args):
+        ptr = cgutils.alloca_once_value(builder,args[0])
+        return ptr
+    sig = nb.types.CPointer(nb.typeof(data).instance_type)(nb.typeof(data).instance_type)
+    return sig, impl
 
 
-test_myadd()
+@intrinsic
+def get_ptr(typingctx, data):
+    def impl(context, builder, signature, args):
+        ptr = cgutils.alloca_once_value(builder,args[0])
+        return ptr
+    sig = nb.types.CPointer(nb.int64)(nb.int64)
+    return sig, impl
+
+
+
+@intrinsic
+def ptr_to_val(typingctx, data):
+    def impl(context, builder, signature, args):
+        val = builder.load(args[0])
+        return val
+    sig = data.dtype(nb.types.CPointer(data.dtype))
+    return sig, impl
+
+
+@nb.njit
+def cffi_isin_example(x):
+    a = get_ptr(np.array([11, 2, 3], dtype=np.int64))
+    b = get_ptr(np.array([11, 2, 3], dtype=np.int64))
+    return c_isin(a, 3, b, 3)
+
+
+print(cffi_isin_example(10))
+
+#
+# @nb.njit
+# def print_ptr():
+#     a = np.array([1, 2, 3], dtype=np.int64)
+#     address = a.ctypes.data
+#     val_to_ptr(a)
+#
+#     # print(address)
+#     # pointer, read_only_flag = a.__array_interface__['data']
+#     # print(pointer)
+#
+# print_ptr()
