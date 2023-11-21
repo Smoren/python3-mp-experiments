@@ -15,18 +15,9 @@ c_isin = C.isin
 @intrinsic
 def val_to_ptr(typingctx, data):
     def impl(context, builder, signature, args):
-        ptr = cgutils.alloca_once_value(builder,args[0])
+        ptr = cgutils.alloca_once_value(builder, args[0])
         return ptr
     sig = nb.types.CPointer(nb.typeof(data).instance_type)(nb.typeof(data).instance_type)
-    return sig, impl
-
-
-@intrinsic
-def get_ptr(typingctx, data):
-    def impl(context, builder, signature, args):
-        ptr = cgutils.alloca_once_value(builder,args[0])
-        return ptr
-    sig = nb.types.CPointer(nb.int64)(nb.int64)
     return sig, impl
 
 
@@ -40,11 +31,21 @@ def ptr_to_val(typingctx, data):
     return sig, impl
 
 
+@intrinsic
+def get_ptr(typingctx, data):
+    def impl(context, builder, signature, args):
+        ptr = cgutils.alloca_once_value(builder, args[0])
+        return ptr
+    sig = nb.types.CPointer(nb.int64[:])(nb.int64[:])
+    return sig, impl
+
+
 @nb.njit
 def cffi_isin_example(x):
     a = get_ptr(np.array([11, 2, 3], dtype=np.int64))
-    b = get_ptr(np.array([11, 2, 3], dtype=np.int64))
-    return c_isin(a, 3, b, 3)
+    b = get_ptr(np.array([22, 2, 3], dtype=np.int64))
+    print(ptr_to_val(a), ptr_to_val(b))
+    # return c_isin(a, 3, b, 3)
 
 
 print(cffi_isin_example(10))
