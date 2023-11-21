@@ -1,8 +1,11 @@
+import ctypes
 from ctypes import CFUNCTYPE, c_double
+from numpy.ctypeslib import ndpointer
 
 import llvmlite.binding as llvm
 import llvmlite.ir as ir
 import numba
+import numpy as np
 
 llvm.initialize()
 llvm.initialize_native_target()
@@ -35,14 +38,23 @@ engine.finalize_object()
 
 func_ptr = engine.get_function_address("outadd")
 
-myadd = CFUNCTYPE(c_double, c_double, c_double)(func_ptr)
+myisin = CFUNCTYPE(
+    numba.types.CPointer(ctypes.c_int64),
+    ndpointer(ctypes.c_int64, flags="C_CONTIGUOUS"),
+    ctypes.c_int64,
+    ndpointer(ctypes.c_int64, flags="C_CONTIGUOUS"),
+    ctypes.c_int64,
+)(func_ptr)
 
 
-@numba.njit(fastmath=True, parallel=True)
+@numba.njit(fastmath=True)
 def test_myadd():
-    for _ in numba.prange(10):
-        res = myadd(1.0, 3.5)
-        print("myadd(...) =", res)
+    numba.types.CPointer(ctypes.c_int64)
+    a = np.array([1, 2, 3, 4, 5], dtype=np.int64)
+    b = np.array([1, 3, 5], dtype=np.int64)
+
+    res = myisin(ctypes.c_void_p(a.ctypes.data), ctypes.c_int64(a.shape[0]), ctypes.c_void_p(b.ctypes.data), ctypes.c_int64(b.shape[0]))
+    print("myadd(...) =", res)
 
 
 test_myadd()
