@@ -7,7 +7,6 @@ source = """
 #include <stdbool.h>
 
 void isin(int64_t where[], int64_t where_size, int64_t what[], int64_t what_size, bool result[]) {
-    result = (bool*)malloc(sizeof(bool) * where_size);
     for (int64_t i = 0; i < where_size; i++) {
         result[i] = false;
     }
@@ -41,10 +40,6 @@ void isin(int64_t where[], int64_t where_size, int64_t what[], int64_t what_size
 
     free(what_normalized);
     free(isin_helper_ar);
-
-    for (int64_t i = 0; i < where_size; i++) {
-        printf("result[%d] = %d\\n", i, (int)result[i]);
-    }
 }
 """
 ffi.set_source(module_name="cffi_isin", source=source)
