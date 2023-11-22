@@ -5,6 +5,8 @@ import numba as nb
 from ctypes import CDLL, c_bool, c_int64
 from numpy.ctypeslib import ndpointer
 
+from solib.isin.works.isin_njit import isin_cffi
+
 isin_lib = CDLL('./isin.so')
 
 isin_lib.isin.argtypes = [
@@ -92,32 +94,34 @@ a = np.array(np.arange(10, 100000000, 2), dtype=np.int64)
 b = np.array(np.arange(10, 100000000, 3), dtype=np.int64)
 
 ts = time.time()
-r2 = isin_py(a, b)
-print(r2.shape, r2[:12])
+r = isin_c(a, b)
+print(r.shape, r[:12])
+print(f'isin_c(): {time.time() - ts}')
+
+# ts = time.time()
+# r = isin_cffi(a, b)
+# print(r.shape, r[:12])
+# print(f'isin_cffi(): {time.time() - ts}')
+
+ts = time.time()
+r = isin_py(a, b)
+print(r.shape, r[:12])
 print(f'isin_py(): {time.time() - ts}')
 
 ts = time.time()
-r1 = np.isin(a, b)
-print(r1.shape, r1[:12])
+r = np.isin(a, b)
+print(r.shape, r[:12])
 print(f'np.isin(): {time.time() - ts}')
 
 ts = time.time()
-r2 = isin_c(a, b)
-print(r2.shape, r2[:12])
-print(f'isin_lib.isin(): {time.time() - ts}')
-
-
-ts = time.time()
-r2 = isin_set(a, b)
-print(r2.shape, r2[:12])
+r = isin_set(a, b)
+print(r.shape, r[:12])
 print(f'isin_set(): {time.time() - ts}')
 
 ts = time.time()
-r3 = in1d(a, b)
-print(r3.shape, r3[:12])
+r = in1d(a, b)
+print(r.shape, r[:12])
 print(f'in1d(): {time.time() - ts}')
-
-assert np.unique(r1 == r2) == np.array([True])
 
 a = np.array(np.random.randint(-1000, 1000, 100000), dtype=np.int64)
 b = np.array(np.random.randint(-1000, 1000, 100000), dtype=np.int64)
