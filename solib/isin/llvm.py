@@ -39,7 +39,7 @@ def get_ptr(typingctx, data):
     def impl(context, builder, signature, args):
         ptr = cgutils.alloca_once_value(builder, args[0])
         return ptr
-    sig = nb.types.CPointer(nb.int64[:])(nb.int64[:])
+    sig = nb.types.CPointer(nb.int64[:])(nb.int64)
     return sig, impl
 
 
@@ -75,8 +75,8 @@ def cffi_isin_example(x):
     b = get_ptr(np.array([22, 2, 3], dtype=np.int64))
     print(ptr_to_val(a), ptr_to_val(b))
     # isin = get_isin()
-    print(get_isin(np.array([22, 2, 3]), np.array([11, 2, 3])))
-    # return c_isin(a, 3, b, 3)
+    # print(get_isin(np.array([22, 2, 3]), np.array([11, 2, 3])))
+    return c_isin(a, 3, b, 3)
 
 
 print(cffi_isin_example(10))
