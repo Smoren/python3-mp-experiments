@@ -17,6 +17,7 @@ def test(where, what):
     p_where, p_what = ffi.from_buffer(where.astype(np.int64)), ffi.from_buffer(what.astype(np.int64))
 
     result = np.empty(where_size, dtype=np.bool_)
+    print(result)
     p_result = ffi.from_buffer(result.astype(np.bool_))
     isin(p_where, p_where_size, p_what, p_what_size, p_result)
     return nb.carray(p_result, result.shape[0], result.dtype)

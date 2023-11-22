@@ -604,6 +604,10 @@ void isin(int64_t where[], int64_t where_size, int64_t what[], int64_t what_size
 
     free(what_normalized);
     free(isin_helper_ar);
+
+    for (int64_t i = 0; i < where_size; i++) {
+        printf("result[%d] = %d\n", i, (int)result[i]);
+    }
 }
 
 
