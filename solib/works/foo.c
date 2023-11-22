@@ -567,7 +567,7 @@ static void (*_cffi_call_python_org)(struct _cffi_externpy_s *, char *);
 /************************************************************/
 
 
-void foo_f(double a, double *b) { b[2]+=a; printf("[%f]", b[2]); }
+void foo_f(double a, double *b) { b[2]+=a; }
 
 
 /************************************************************/
