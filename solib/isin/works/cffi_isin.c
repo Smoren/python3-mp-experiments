@@ -569,12 +569,13 @@ static void (*_cffi_call_python_org)(struct _cffi_externpy_s *, char *);
 
 #include <stdbool.h>
 
-void isin(int64_t where[], int64_t where_size, int64_t what[], int64_t what_size, bool result[]) {
+bool* isin(int64_t where[], int64_t where_size, int64_t what[], int64_t what_size) {
+    bool* result = (bool*)malloc(sizeof(bool) * where_size);
     for (int64_t i = 0; i < where_size; i++) {
         result[i] = false;
     }
 
-    if (what_size == 0) return;
+    if (what_size == 0) return result;
 
     int64_t what_min = what[0], what_max = what[0];
     for (int64_t i = 1; i < what_size; i++) {
@@ -603,26 +604,27 @@ void isin(int64_t where[], int64_t where_size, int64_t what[], int64_t what_size
 
     free(what_normalized);
     free(isin_helper_ar);
+
+    return result;
 }
 
 
 /************************************************************/
 
 static void *_cffi_types[] = {
-/*  0 */ _CFFI_OP(_CFFI_OP_FUNCTION, 8), // void()(int64_t *, int64_t, int64_t *, int64_t, _Bool *)
+/*  0 */ _CFFI_OP(_CFFI_OP_FUNCTION, 6), // _Bool *()(int64_t *, int64_t, int64_t *, int64_t)
 /*  1 */ _CFFI_OP(_CFFI_OP_POINTER, 2), // int64_t *
 /*  2 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 23), // int64_t
 /*  3 */ _CFFI_OP(_CFFI_OP_NOOP, 1),
 /*  4 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 23),
-/*  5 */ _CFFI_OP(_CFFI_OP_POINTER, 7), // _Bool *
-/*  6 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
+/*  5 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
+/*  6 */ _CFFI_OP(_CFFI_OP_POINTER, 7), // _Bool *
 /*  7 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 1), // _Bool
-/*  8 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 0), // void
 };
 
-static void _cffi_d_isin(int64_t * x0, int64_t x1, int64_t * x2, int64_t x3, _Bool * x4)
+static _Bool * _cffi_d_isin(int64_t * x0, int64_t x1, int64_t * x2, int64_t x3)
 {
-  isin(x0, x1, x2, x3, x4);
+  return isin(x0, x1, x2, x3);
 }
 #ifndef PYPY_VERSION
 static PyObject *
@@ -632,16 +634,16 @@ _cffi_f_isin(PyObject *self, PyObject *args)
   int64_t x1;
   int64_t * x2;
   int64_t x3;
-  _Bool * x4;
   Py_ssize_t datasize;
   struct _cffi_freeme_s *large_args_free = NULL;
+  _Bool * result;
+  PyObject *pyresult;
   PyObject *arg0;
   PyObject *arg1;
   PyObject *arg2;
   PyObject *arg3;
-  PyObject *arg4;
 
-  if (!PyArg_UnpackTuple(args, "isin", 5, 5, &arg0, &arg1, &arg2, &arg3, &arg4))
+  if (!PyArg_UnpackTuple(args, "isin", 4, 4, &arg0, &arg1, &arg2, &arg3))
     return NULL;
 
   datasize = _cffi_prepare_pointer_call_argument(
@@ -670,25 +672,16 @@ _cffi_f_isin(PyObject *self, PyObject *args)
   if (x3 == (int64_t)-1 && PyErr_Occurred())
     return NULL;
 
-  datasize = _cffi_prepare_pointer_call_argument(
-      _cffi_type(5), arg4, (char **)&x4);
-  if (datasize != 0) {
-    x4 = ((size_t)datasize) <= 640 ? (_Bool *)alloca((size_t)datasize) : NULL;
-    if (_cffi_convert_array_argument(_cffi_type(5), arg4, (char **)&x4,
-            datasize, &large_args_free) < 0)
-      return NULL;
-  }
-
   Py_BEGIN_ALLOW_THREADS
   _cffi_restore_errno();
-  { isin(x0, x1, x2, x3, x4); }
+  { result = isin(x0, x1, x2, x3); }
   _cffi_save_errno();
   Py_END_ALLOW_THREADS
 
   (void)self; /* unused */
+  pyresult = _cffi_from_c_pointer((char *)result, _cffi_type(6));
   if (large_args_free != NULL) _cffi_free_array_arguments(large_args_free);
-  Py_INCREF(Py_None);
-  return Py_None;
+  return pyresult;
 }
 #else
 #  define _cffi_f_isin _cffi_d_isin
@@ -710,7 +703,7 @@ static const struct _cffi_type_context_s _cffi_type_context = {
   0,  /* num_enums */
   0,  /* num_typenames */
   NULL,  /* no includes */
-  9,  /* num_types */
+  8,  /* num_types */
   0,  /* flags */
 };
 

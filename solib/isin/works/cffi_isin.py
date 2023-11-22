@@ -1,17 +1,18 @@
 import cffi
 
 ffi = cffi.FFI()
-defs = "void isin(int64_t where[], int64_t where_size, int64_t what[], int64_t what_size, bool result[]);"
+defs = "bool* isin(int64_t where[], int64_t where_size, int64_t what[], int64_t what_size);"
 ffi.cdef(defs, override=True)
 source = """
 #include <stdbool.h>
 
-void isin(int64_t where[], int64_t where_size, int64_t what[], int64_t what_size, bool result[]) {
+bool* isin(int64_t where[], int64_t where_size, int64_t what[], int64_t what_size) {
+    bool* result = (bool*)malloc(sizeof(bool) * where_size);
     for (int64_t i = 0; i < where_size; i++) {
         result[i] = false;
     }
 
-    if (what_size == 0) return;
+    if (what_size == 0) return result;
 
     int64_t what_min = what[0], what_max = what[0];
     for (int64_t i = 1; i < what_size; i++) {
@@ -40,6 +41,8 @@ void isin(int64_t where[], int64_t where_size, int64_t what[], int64_t what_size
 
     free(what_normalized);
     free(isin_helper_ar);
+
+    return result;
 }
 """
 ffi.set_source(module_name="cffi_isin", source=source)
