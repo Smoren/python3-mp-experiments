@@ -2,3 +2,4 @@ numpy
 ray
 llvmlite
 cffi
+jupyter
